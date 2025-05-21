@@ -12,9 +12,7 @@ unsafe fn get_ref_map(rip: *const u8) -> *const u8 {
 }
 
 unsafe fn walk(var: *const u64) {
-    if *var == 0 {
-        return;
-    }
+    if *var == 0 { return; }
 
     let object = *var as *mut Object;
     if (*object).gc_count == 1 {
@@ -22,8 +20,8 @@ unsafe fn walk(var: *const u64) {
     }
     (*object).gc_count = 1;
 
-    match (*(*object).prototype).tag {
-        TypeTag::Other => {
+    match (*(*object).prototype).type_tag {
+        Type::Other => {
             let len = ((*(*object).prototype).size / 8) as usize;
             let ref_map = (*(*object).prototype).map;
             for i in 0..len {
@@ -33,7 +31,7 @@ unsafe fn walk(var: *const u64) {
                 }
             }
         }
-        TypeTag::RefList => {
+        Type::ObjList => {
             let list = object as *mut ArrayObject;
             for i in 0..(*list).len {
                 walk((list.add(1) as *const u64).add(i as usize));

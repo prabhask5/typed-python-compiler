@@ -107,8 +107,8 @@ pub unsafe extern "C" fn len(pointer: *mut Object) -> i32 {
     let object = pointer as *mut ArrayObject;
     let prototype = (*object).object.prototype;
     if !matches!(
-        (*prototype).tag,
-        TypeTag::Str | TypeTag::PlainList | TypeTag::RefList
+        (*prototype).type_tag,
+        Type::Str | Type::ValueList | Type::ObjList
     ) {
         invalid_arg();
     }
@@ -126,11 +126,11 @@ pub unsafe extern "C" fn print(pointer: *mut Object) -> *mut u8 {
         invalid_arg();
     }
     let prototype = (*pointer).prototype;
-    match (*prototype).tag {
-        TypeTag::Int => {
+    match (*prototype).type_tag {
+        Type::Int => {
             println!("{}", *(pointer.offset(1) as *const i32));
         }
-        TypeTag::Bool => {
+        Type::Bool => {
             println!(
                 "{}",
                 if *(pointer.offset(1) as *const bool) {
@@ -140,7 +140,7 @@ pub unsafe extern "C" fn print(pointer: *mut Object) -> *mut u8 {
                 }
             );
         }
-        TypeTag::Str => {
+        Type::Str => {
             let object = pointer as *mut ArrayObject;
             let slice = std::str::from_utf8(std::slice::from_raw_parts(
                 object.offset(1) as *const u8,

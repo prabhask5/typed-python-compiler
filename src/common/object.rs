@@ -17,7 +17,7 @@ pub enum Type {
 pub struct Prototype { // Defines the headers for an object prototype. An actual object memory layout is Prototype + object method function pointers.
     pub size: i32, // Represents size (>= 0) for normal object, < 0 for arrays object.
     pub type_tag: Type,
-    pub dispatch_table: *const u8, // Points to the dynamic dispatch method table for the object.
+    pub map: *const u8, // Points to the dynamic dispatch method table for the object.
     // ... Object method pointers (right after header in memory).
 }
 pub const PROTOTYPE_SIZE_OFFSET: u32 = 0;
@@ -28,6 +28,7 @@ pub const OBJECT_PROTOTYPE_SIZE: u32 = 24;
 pub const NUM_PROTOTYPE_HEADERS: u32 = 3;
 
 #[repr(C)] // Makes sure the struct is not reordered by the Rust compiler.
+#[allow(dead_code)] // Used in GC.
 pub struct Object {
     pub prototype: *const Prototype,
     pub gc_count: u64,
@@ -42,6 +43,7 @@ pub const OBJECT_ATTRIBUTE_OFFSET: u32 = OBJECT_GC_NEXT_OFFSET + 8;
 pub const OBJECT_HEADER_MEMBER_COUNT: u32 = 3;
 
 #[repr(C)] // Makes sure the struct is not reordered by the Rust compiler.
+#[allow(dead_code)] // Used in GC.
 pub struct ArrayObject {
     pub object: Object,
     pub len: u64,
