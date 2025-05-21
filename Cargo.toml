@@ -4,7 +4,6 @@ members = [
     "chocopy-rs",
     "chocopy-rs-common",
     "chocopy-rs-std",
-    "chocopy-rs-tester",
 ]
 
 default-members = [

@@ -1,8 +1,7 @@
 [package]
 name = "chocopy-rs"
-version = "1.1.0"
-authors = ["Weiyi Wang <wwylele@gmail.com>"]
-edition = "2018"
+version = "0.1.0"
+edition = "2024"
 
 [dependencies]
 chocopy-rs-common = { path = "../chocopy-rs-common" }
