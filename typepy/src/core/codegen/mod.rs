@@ -656,6 +656,8 @@ pub fn link(
         Platform::Linux | Platform::Macos => {
             let mut command = std::process::Command::new("cc");
             command.args([
+                OsStr::new("-arch"),
+                OsStr::new("x86_64"),
                 OsStr::new("-o"),
                 OsStr::new(path),
                 obj_path.as_os_str(),
