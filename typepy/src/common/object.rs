@@ -1,5 +1,3 @@
-use std::ptr::*;
-
 pub const POINTER_SIZE: u32 = 8;
 pub const FUNCTION_POINTER_SIZE: u32 = 8;
 
@@ -33,28 +31,11 @@ pub const PROTOTYPE_INIT_OFFSET: u32 = PROTOTYPE_MAP_OFFSET + FUNCTION_POINTER_S
 pub const OBJECT_PROTOTYPE_SIZE: u32 = PROTOTYPE_INIT_OFFSET + FUNCTION_POINTER_SIZE;
 pub const NUM_PROTOTYPE_HEADERS: u32 = 3;
 
-#[repr(C)] // Makes sure the struct is not reordered by the Rust compiler.
-#[allow(dead_code)] // Used in GC.
-pub struct Object {
-    pub prototype: *const Prototype,
-    pub gc_is_marked: u8, // In mark and sweep, represents if this object is marked for usage.
-    pub gc_next: Option<NonNull<Object>>, // A pointer to the next allocated object in the heap, forming a singly linked list of all heap-allocated, GC-managed objects.
-    // ... Object attributes (right after header in memory).
-}
-
 pub const OBJECT_PROTOTYPE_OFFSET: u32 = 0;
 pub const OBJECT_GC_COUNT_OFFSET: u32 = OBJECT_PROTOTYPE_OFFSET + 8;
 pub const OBJECT_GC_NEXT_OFFSET: u32 = OBJECT_GC_COUNT_OFFSET + 8;
 pub const OBJECT_ATTRIBUTE_OFFSET: u32 = OBJECT_GC_NEXT_OFFSET + 8;
 pub const NUM_OBJECT_HEADERS: u32 = 3;
-
-#[repr(C)] // Makes sure the struct is not reordered by the Rust compiler.
-#[allow(dead_code)] // Used in GC.
-pub struct ArrayObject {
-    pub object: Object,
-    pub len: u64, // Gets the number of elements in the array. Different from size in the prototype (< 0 for array objects).
-    // ... Array elements (right after header in memory).
-}
 
 pub const ARRAY_LEN_OFFSET: u32 = OBJECT_ATTRIBUTE_OFFSET;
 pub const ARRAY_ELEMENT_OFFSET: u32 = ARRAY_LEN_OFFSET + 8;
