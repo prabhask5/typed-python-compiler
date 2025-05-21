@@ -8,17 +8,24 @@ use std::ptr::*;
 
 mod gc;
 
+/// Allocation unit used to measure memory usage in the mark-and-sweep GC.
 #[repr(transparent)]
 #[derive(Clone, Copy)]
 struct AllocUnit(u64);
 
+// Thread-local global variables to hold runtime and GC metadata.
 thread_local! {
+    // Points to initialization parameters passed to runtime.
     static INIT_PARAM: Cell<*const InitParam> = const { Cell::new(std::ptr::null()) };
+    // Head of the linked list of all allocated GC-tracked objects.
     static GC_HEAD: Cell<Option<NonNull<Object>>> = const { Cell::new(None) };
+    // Total space currently allocated (in AllocUnits).
     static CURRENT_SPACE: Cell<usize> = const { Cell::new(0) };
+    // Threshold at which the GC should trigger a collection.
     static THRESHOLD_SPACE: Cell<usize> = const { Cell::new(1024) };
 }
 
+/// Helper to round up memory allocation to nearest unit.
 fn divide_up(value: usize) -> usize {
     let align = size_of::<AllocUnit>();
     if value == 0 {
@@ -28,9 +35,12 @@ fn divide_up(value: usize) -> usize {
     }
 }
 
+/// Computes the size of an object in allocation units.
+/// Handles both fixed-size and array-based objects.
+///
 /// # Safety
-///  - `*prototype` is not null.
-///  - Safety requirement for `Prototype`.
+/// - `prototype` must be non-null and valid.
+/// - For arrays, `len` must return valid length.
 pub(crate) unsafe fn calculate_size<F: FnOnce() -> u64>(
     prototype: *const Prototype,
     len: F,
@@ -45,18 +55,13 @@ pub(crate) unsafe fn calculate_size<F: FnOnce() -> u64>(
     }
 }
 
-/// Allocates a TypePy object
+/// Allocates a new TypePy object and tracks it for garbage collection.
+/// Triggers GC if allocation exceeds current threshold.
 ///
 /// # Safety
-///  - `init` already called.
-///  - `prototype` is not null.
-///  - `*prototype` content never changes after calling this function.
-///  - Other safety requirement for `Prototype`.
-///  - `rbp` and `rsp` points to the bottom and the top of the top stack frame.
-///  - For the returned object, any fields in Object (header) must never be changed.
-///  - If the `prototype` indicates an array object,
-///    for the returned object, any fields in ArrayObject (header) must never be changed.
-///  - All attributes in the object must maintain valid values according to the type tag and reference map.
+/// - Called only after runtime is initialized.
+/// - `prototype` must be valid.
+/// - If allocating an array, `len` must be meaningful.
 #[unsafe(export_name = "$alloc_obj")]
 pub unsafe extern "C" fn alloc_obj(
     prototype: *const Prototype,
@@ -65,33 +70,41 @@ pub unsafe extern "C" fn alloc_obj(
     rsp: *const u64,
 ) -> *mut Object {
     unsafe {
+        // Check if we need to run GC before allocating
         if CURRENT_SPACE.with(|current_space| current_space.get())
             >= THRESHOLD_SPACE.with(|threshold_space| threshold_space.get())
         {
-            gc::collect(rbp, rsp);
+            gc::perform_mark_and_sweep_gc(rbp, rsp);
             let current = CURRENT_SPACE.with(|current_space| current_space.get());
             let threshold = std::cmp::max(1024, current * 2);
             THRESHOLD_SPACE.with(|threshold_space| threshold_space.set(threshold));
         }
 
+        // Calculate size in allocation units
         let size = calculate_size(prototype, || len);
 
-        let pointer =
-            Box::into_raw(vec![AllocUnit(0); size].into_boxed_slice()) as *mut AllocUnit as *mut Object;
+        // Allocate raw memory for the object
+        let pointer = Box::into_raw(vec![AllocUnit(0); size].into_boxed_slice())
+            as *mut AllocUnit as *mut Object;
 
+        // Update GC memory tracking
         CURRENT_SPACE.with(|current_space| current_space.set(current_space.get() + size));
 
+        // Insert new object at the head of the GC list
         let gc_next = GC_HEAD.with(|gc_next| gc_next.replace(NonNull::new(pointer)));
 
+        // Initialize object metadata
         let object = Object {
             prototype,
             gc_is_marked: 0,
             gc_next,
         };
 
+        // If object is not an array, write Object struct directly
         if (*prototype).size >= 0 {
             pointer.write(object);
         } else {
+            // For arrays, wrap in ArrayObject
             let object = ArrayObject { object, len };
             (pointer as *mut ArrayObject).write(object);
         }
@@ -100,11 +113,10 @@ pub unsafe extern "C" fn alloc_obj(
     }
 }
 
-/// Gets the array length of a TypePy object
+/// Returns the length of an array-like object.
 ///
 /// # Safety
-///  - `init` is already called.
-///  - `pointer` must be previously returned by `alloc_obj`.
+/// - `pointer` must be a valid object allocated by `alloc_obj`.
 #[unsafe(export_name = "$len")]
 pub unsafe extern "C" fn len(pointer: *mut Object) -> i32 {
     unsafe {
@@ -123,11 +135,11 @@ pub unsafe extern "C" fn len(pointer: *mut Object) -> i32 {
     }
 }
 
-/// Prints a TypePy object
+/// Prints a TypePy object to standard output.
+/// Supports int, bool, and str types.
 ///
 /// # Safety
-///  - `init` is already called.
-///  - `pointer` must be previously returned by `alloc_obj`.
+/// - `pointer` must be valid and initialized.
 #[unsafe(export_name = "$print")]
 pub unsafe extern "C" fn print(pointer: *mut Object) -> *mut u8 {
     unsafe {
@@ -167,12 +179,11 @@ pub unsafe extern "C" fn print(pointer: *mut Object) -> *mut u8 {
     }
 }
 
-/// Creates a new str object that holds a line of user input
+/// Reads a line from stdin into a new str object.
 ///
 /// # Safety
-///  - `init` is already called.
-///  - `rbp` and `rsp` points to the bottom and the top of the top stack frame.
-///  - For the returned object, any fields in ArrayObject (header) must never be changed.
+/// - `init` must be called.
+/// - `rbp` and `rsp` must describe a valid stack frame.
 #[unsafe(export_name = "$input")]
 pub unsafe extern "C" fn input(rbp: *const u64, rsp: *const u64) -> *mut Object {
     unsafe {
@@ -196,44 +207,48 @@ pub unsafe extern "C" fn input(rbp: *const u64, rsp: *const u64) -> *mut Object 
     }
 }
 
-/// Initialize runtime
+/// Sets up runtime with initial parameters.
 ///
 /// # Safety
-///  - `init_param` is not null.
-///  - `*init_param` content never changes after calling this function.
-///  - Other safety requirements on `InitParam`.
+/// - Must be called before any allocations or runtime calls.
 #[unsafe(export_name = "$init")]
 pub unsafe extern "C" fn init(init_param: *const InitParam) {
     INIT_PARAM.with(|i| i.set(init_param));
 }
 
+/// Aborts the program with a fatal error message.
 pub(crate) fn fatal(message: &str) -> ! {
     eprintln!("Fatal error: {}", message);
     abort();
 }
 
+/// Terminates the program with a given exit code.
 fn exit_code(code: i32) -> ! {
     println!("Exited with error code {}", code);
     exit(code);
 }
 
+/// Signals a runtime type or argument error.
 fn invalid_arg() -> ! {
     println!("Invalid argument");
     exit_code(1)
 }
 
+/// Runtime trap: division by zero.
 #[unsafe(export_name = "$div_zero")]
 pub extern "C" fn div_zero() -> ! {
     println!("Division by zero");
     exit_code(2)
 }
 
+/// Runtime trap: index out of bounds.
 #[unsafe(export_name = "$out_of_bound")]
 pub extern "C" fn out_of_bound() -> ! {
     println!("Index out of bounds");
     exit_code(3)
 }
 
+/// Runtime trap: operation on None.
 #[unsafe(export_name = "$none_op")]
 pub extern "C" fn none_op() -> ! {
     println!("Operation on None");
@@ -247,8 +262,10 @@ pub mod crt0_glue {
         fn typepy_main();
     }
 
+    /// Entry point that invokes the compiled TypePy program.
+    ///
     /// # Safety
-    /// `$typepy_main` is linked to a valid TypePy program entry point
+    /// - Assumes a valid `$typepy_main` symbol exists.
     #[unsafe(export_name = "main")]
     pub unsafe extern "C" fn entry_point() -> i32 {
         unsafe { typepy_main(); }
