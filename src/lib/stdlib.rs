@@ -1,4 +1,3 @@
-use chocopy_rs_common::*;
 use std::cell::*;
 use std::mem::*;
 use std::process::{abort, exit};
@@ -80,7 +79,7 @@ pub unsafe extern "C" fn alloc_obj(
 
     let object = Object {
         prototype,
-        gc_count: 0,
+        gc_is_marked: 0,
         gc_next,
     };
 

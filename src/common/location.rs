@@ -23,12 +23,14 @@ impl Location {
     }
 }
 
+// This trait implementation converts from Location to array.
 impl From<Location> for [u32; 4] {
     fn from(l: Location) -> Self {
         [l.start.row, l.start.col, l.end.row, l.end.col]
     }
 }
 
+// This trait implementation converts from array to Location.
 impl From<[u32; 4]> for Location {
     fn from(array: [u32; 4]) -> Self {
         Location {

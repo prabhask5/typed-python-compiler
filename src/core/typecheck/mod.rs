@@ -330,7 +330,7 @@ pub fn check(mut ast: Program) -> Program {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::io::{stdout, Write};
+    use std::io::{Write, stdout};
     #[test]
     fn sample() {
         let mut passed = true;

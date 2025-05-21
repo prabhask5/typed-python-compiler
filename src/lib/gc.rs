@@ -15,15 +15,15 @@ unsafe fn walk(var: *const u64) {
     if *var == 0 { return; }
 
     let object = *var as *mut Object;
-    if (*object).gc_count == 1 {
+    if (*object).gc_is_marked == 1 {
         return;
     }
-    (*object).gc_count = 1;
+    (*object).gc_is_marked = 1;
 
     match (*(*object).prototype).type_tag {
         Type::Other => {
             let len = ((*(*object).prototype).size / 8) as usize;
-            let ref_map = (*(*object).prototype).map;
+            let ref_map = (*(*object).prototype).reference_bitmap;
             for i in 0..len {
                 let flag = *ref_map.add(i / 8) & (1 << (i % 8));
                 if flag != 0 {
@@ -77,8 +77,8 @@ pub unsafe fn collect(rbp: *const u64, rsp: *const u64) {
     let mut collect_space = 0;
     while let Some(object) = *cur {
         let object = object.as_ptr();
-        if (*object).gc_count == 1 {
-            (*object).gc_count = 0;
+        if (*object).gc_is_marked == 1 {
+            (*object).gc_is_marked = 0;
             cur = &mut (*object).gc_next;
         } else {
             *cur = (*object).gc_next;

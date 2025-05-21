@@ -11,6 +11,7 @@ impl<'a, F, V> FrameHandle<'a, F, V> {
     }
 }
 
+// The Drop trait defines the destructor functionality for the type.
 impl<'a, F, V> Drop for FrameHandle<'a, F, V> {
     fn drop(&mut self) {
         (self.0).0.pop();
@@ -60,7 +61,7 @@ impl<F, V> LocalEnv<F, V> {
                             return Some(EnvSlot::Var(t, Assignable(false)));
                         }
                         Some(LocalSlot::Var(t)) => {
-                            return Some(EnvSlot::Var(t, Assignable(s.is_some())))
+                            return Some(EnvSlot::Var(t, Assignable(s.is_some())));
                         }
                         Some(LocalSlot::Func(t)) => {
                             assert!(s.is_none());

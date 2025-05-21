@@ -2461,21 +2461,9 @@ pub(super) fn gen_code_set(ast: Program, platform: Platform) -> CodeSet {
     chunks.push(gen_special_proto(INT_PROTOTYPE, 4, Type::Int));
     chunks.push(gen_special_proto(BOOL_PROTOTYPE, 1, Type::Bool));
     chunks.push(gen_special_proto(STR_PROTOTYPE, -1, Type::Str));
-    chunks.push(gen_special_proto(
-        INT_LIST_PROTOTYPE,
-        -4,
-        Type::ValueList,
-    ));
-    chunks.push(gen_special_proto(
-        BOOL_LIST_PROTOTYPE,
-        -1,
-        Type::ValueList,
-    ));
-    chunks.push(gen_special_proto(
-        OBJECT_LIST_PROTOTYPE,
-        -8,
-        Type::ObjList,
-    ));
+    chunks.push(gen_special_proto(INT_LIST_PROTOTYPE, -4, Type::ValueList));
+    chunks.push(gen_special_proto(BOOL_LIST_PROTOTYPE, -1, Type::ValueList));
+    chunks.push(gen_special_proto(OBJECT_LIST_PROTOTYPE, -8, Type::ObjList));
 
     // Generate configuration data for initialization
     chunks.push(gen_init_param(global_offset as u64, &global_ref_indexs));

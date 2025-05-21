@@ -439,7 +439,7 @@ impl DebugWriter for Codeview {
 
         let mut storage_type = vec![];
         storage_type
-            .write_u16(class_debug.attributes.len() as u16 + OBJECT_HEADER_MEMBER_COUNT as u16); // element count
+            .write_u16(class_debug.attributes.len() as u16 + NUM_OBJECT_HEADERS as u16); // element count
         storage_type.write_u16(0); // no flag
         storage_type.write_u32(fields_id);
         storage_type.write_u32(0); // derived

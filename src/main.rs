@@ -1,12 +1,12 @@
-mod core;
 mod common;
+mod core;
 
+use common::location::Location;
+use common::node::Program;
 use core::codegen;
+use core::codegen::Platform;
 use core::parser;
 use core::typecheck;
-use core::codegen::Platform;
-use common::node::Program;
-use common::location::Location;
 use getopts::Options;
 use std::fs::File;
 use std::io::{BufRead, BufReader};

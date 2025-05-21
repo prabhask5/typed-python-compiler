@@ -28,7 +28,7 @@ pub fn process(path: &str) -> Result<Program, Box<dyn std::error::Error>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::io::{stdout, Write};
+    use std::io::{Write, stdout};
 
     fn compare_ast(a: &Program, b: &Program) -> bool {
         let Program {
