@@ -201,7 +201,7 @@ impl<'a> Emitter<'a> {
         let min_index = self.ref_list.iter().min().cloned().unwrap_or(0) / 8;
         let max_index = self.ref_list.iter().max().cloned().unwrap_or(0) / 8;
         let len = max_index - min_index + 1;
-        let mut ref_map = vec![0; 8 + (len as usize + 7) / 8];
+        let mut ref_map = vec![0; 8 + (len as usize).div_ceil(8)];
         ref_map[0..4].copy_from_slice(&min_index.to_le_bytes());
         ref_map[4..8].copy_from_slice(&max_index.to_le_bytes());
         for &offset in &self.ref_list {
@@ -2093,7 +2093,7 @@ fn gen_main(
     main_code.finalize(ProcedureDebug {
         decl_line: ast
             .statements
-            .get(0)
+            .first()
             .map_or(1, |s| s.base().location.start.row),
         artificial: false,
         parent: None,
@@ -2109,7 +2109,7 @@ fn gen_main(
 fn gen_init_param(global_size: u64, global_ref_indexs: &[i32]) -> Chunk {
     let mut code = vec![0; INIT_PARAM_SIZE as usize];
     code[GLOBAL_SIZE_OFFSET as usize..][..8].copy_from_slice(&global_size.to_le_bytes());
-    let mut ref_map = vec![0; (global_size as usize / 8 + 7) / 8];
+    let mut ref_map = vec![0; (global_size as usize / 8).div_ceil(8)];
     for index in global_ref_indexs {
         let index = *index as usize;
         ref_map[index / 8] |= 1 << (index % 8);
@@ -2429,7 +2429,7 @@ pub(super) fn gen_code_set(ast: Program, platform: Platform) -> CodeSet {
                 to: ChunkLinkTarget::Symbol(method.link_name.clone(), 0),
             })
             .collect();
-        let mut ref_map = vec![0u8; ((class_slot.object_size as usize / 8) + 7) / 8];
+        let mut ref_map = vec![0u8; (class_slot.object_size as usize / 8).div_ceil(8)];
         for attribute in class_slot.attributes.values() {
             if !attribute.target_type.is_plain() {
                 let index = (attribute.offset - OBJECT_ATTRIBUTE_OFFSET) as usize / 8;

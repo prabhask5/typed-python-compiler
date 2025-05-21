@@ -8,7 +8,7 @@ pub fn process(path: &str) -> Result<Program, Box<dyn std::error::Error>> {
     use std::fs::*;
     use std::io::*;
 
-    let get_char = File::open(path)?
+    let get_char = BufReader::new(File::open(path)?)
         .bytes()
         .map(|c| match c {
             Ok(c) if c < 0x80 => Some(c as char),

@@ -1,3 +1,3 @@
 pub mod codegen;
-pub mod parser;
+pub mod frontend;
 pub mod typecheck;

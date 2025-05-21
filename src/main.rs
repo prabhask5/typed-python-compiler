@@ -5,7 +5,7 @@ use common::location::Location;
 use common::node::Program;
 use core::codegen;
 use core::codegen::Platform;
-use core::parser;
+use core::frontend;
 use core::typecheck;
 use getopts::Options;
 use std::fs::File;
@@ -121,14 +121,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     }
 
-    let input = if let Some(input) = matches.free.get(0) {
+    let input = if let Some(input) = matches.free.first() {
         input
     } else {
         eprintln!("Please specifiy source file");
         return Err(ArgumentError.into());
     };
 
-    let ast = parser::process(input)?;
+    let ast = frontend::process(input)?;
 
     if matches.opt_present("ast") {
         println!("{}", serde_json::to_string_pretty(&ast).unwrap());

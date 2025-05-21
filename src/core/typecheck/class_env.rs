@@ -99,7 +99,7 @@ impl ClassEnv {
                     let name = item_decl.name_mut();
 
                     // Self parameter check
-                    if parameters.get(0)
+                    if parameters.first()
                         != Some(&ValueType::ClassValueType(ClassValueType {
                             class_name: class_name.clone(),
                         }))
