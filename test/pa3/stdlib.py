@@ -1,4 +1,4 @@
-# ChocoPy library functions
+# TypePy library functions
 def int_to_str(x: int) -> str:
     digits:[str] = None 
     result:str = ""

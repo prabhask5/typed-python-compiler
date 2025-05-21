@@ -77,7 +77,7 @@
         "kind" : "ClassValueType",
         "className" : "str"
       },
-      "value" : "ChocoPy"
+      "value" : "TypePy"
     }
   }, {
     "kind" : "FuncDef",

@@ -19,7 +19,7 @@ class bar(object):
         for x in xx:
             self.p = x == 2
 
-        qux(0) # Yay! ChocoPy
+        qux(0) # Yay! TypePy
 
         count = count + 1
 

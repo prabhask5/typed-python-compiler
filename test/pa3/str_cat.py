@@ -1,6 +1,6 @@
 a:str = "Hello"
 b:str = "World"
-c:str = "ChocoPy"
+c:str = "TypePy"
 
 def cat2(a:str, b:str) -> str:
     return a + b

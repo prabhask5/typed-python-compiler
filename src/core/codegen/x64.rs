@@ -2029,7 +2029,7 @@ fn gen_main(
     platform: Platform,
 ) -> Chunk {
     let mut main_code = Emitter::new(
-        BUILTIN_CHOCOPY_MAIN,
+        BUILTIN_TYPEPY_MAIN,
         None,
         Some(storage_env),
         Some(classes),
@@ -2256,7 +2256,7 @@ fn gen_special_proto(name: &str, size: i32, tag: Type) -> Chunk {
     }
 }
 
-// Generate the ChocoPy machine code
+// Generate the TypePy machine code
 pub(super) fn gen_code_set(ast: Program, platform: Platform) -> CodeSet {
     let mut globals = HashMap::new();
     let mut global_ref_indexs = vec![];

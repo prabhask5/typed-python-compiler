@@ -1,6 +1,6 @@
 a:str = "Hello"
 b:str = "World"
-c:str = "ChocoPy"
+c:str = "TypePy"
 
 def eq(a:str, b:str) -> bool:
     return a == b

@@ -36,7 +36,7 @@ const BUILTIN_PRINT: &str = "$print";
 const BUILTIN_INIT: &str = "$init";
 
 // Program entry point symbol
-const BUILTIN_CHOCOPY_MAIN: &str = "$chocopy_main";
+const BUILTIN_TYPEPY_MAIN: &str = "$typepy_main";
 
 // Special data section symbols
 const GLOBAL_SECTION: &str = "$global";
@@ -216,7 +216,7 @@ impl ClassDebug {
     }
 }
 
-// The generated ChocoPy program, without linking to other libraries
+// The generated TypePy program, without linking to other libraries
 struct CodeSet {
     chunks: Vec<Chunk>,
     global_size: u64,             // Section size reserved for all global variables
@@ -449,7 +449,7 @@ pub fn gen_object(
         }
 
         // Only the entry point is exposed in linkage scope for linking with external entry point
-        let scope = if chunk.name == BUILTIN_CHOCOPY_MAIN {
+        let scope = if chunk.name == BUILTIN_TYPEPY_MAIN {
             SymbolScope::Linkage
         } else {
             SymbolScope::Compilation
@@ -589,15 +589,6 @@ pub fn link(
     static_lib: bool, // prefer static library instead of dynamic library
     platform: Platform,
 ) -> std::result::Result<(), Box<dyn std::error::Error>> {
-    // Find the standard library
-    let lib_file = match platform {
-        Platform::Windows => "chocopy_rs_std.lib",
-        Platform::Linux | Platform::Macos => "libchocopy_rs_std.a",
-    };
-
-    let mut lib_path = std::env::current_exe()?;
-    lib_path.set_file_name(lib_file);
-
     // Invoke the linker
     let ld_output = match platform {
         Platform::Windows => {
@@ -631,18 +622,17 @@ pub fn link(
                 "@echo off
     call \"{}\" amd64
     link /NOLOGO /NXCOMPAT /OPT:REF,NOICF \
-    \"{}\" \"{}\" /OUT:\"{}\" \
+    \"{}\" /OUT:\"{}\" \
     kernel32.lib advapi32.lib ws2_32.lib userenv.lib Bcrypt.lib ntdll.lib {} \
     /SUBSYSTEM:CONSOLE /DEBUG",
                 windows_path_escape(&vcvarsall)?,
                 windows_path_escape(obj_path)?,
-                windows_path_escape(&lib_path)?,
                 windows_path_escape(Path::new(path))?,
                 libs
             );
 
             let mut bat_path = std::env::temp_dir();
-            let bat_name = format!("chocopy-{}.bat", rand::random::<u32>());
+            let bat_name = format!("typepy-{}.bat", rand::random::<u32>());
             bat_path.push(bat_name);
 
             std::fs::write(&bat_path, batch_content)?;
@@ -659,7 +649,6 @@ pub fn link(
                 OsStr::new("-o"),
                 OsStr::new(path),
                 obj_path.as_os_str(),
-                lib_path.as_os_str(),
                 OsStr::new("-pthread"),
                 OsStr::new("-ldl"),
             ]);
@@ -699,7 +688,7 @@ pub fn codegen(
         obj_path.to_owned()
     } else {
         let mut obj_path = std::env::temp_dir();
-        let obj_name = format!("chocopy-{}.o", rand::random::<u32>());
+        let obj_name = format!("typepy-{}.o", rand::random::<u32>());
         obj_path.push(obj_name);
         obj_path
     };
