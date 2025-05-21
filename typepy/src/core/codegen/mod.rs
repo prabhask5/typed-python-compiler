@@ -589,6 +589,15 @@ pub fn link(
     static_lib: bool, // prefer static library instead of dynamic library
     platform: Platform,
 ) -> std::result::Result<(), Box<dyn std::error::Error>> {
+    // Find the standard library
+    let lib_file = match platform {
+        Platform::Windows => "typepy_stdlib.lib",
+        Platform::Linux | Platform::Macos => "libtypepy_stdlib.a",
+    };
+
+    let mut lib_path = std::env::current_exe()?;
+    lib_path.set_file_name(lib_file);
+
     // Invoke the linker
     let ld_output = match platform {
         Platform::Windows => {
@@ -622,11 +631,12 @@ pub fn link(
                 "@echo off
     call \"{}\" amd64
     link /NOLOGO /NXCOMPAT /OPT:REF,NOICF \
-    \"{}\" /OUT:\"{}\" \
+    \"{}\" \"{}\" /OUT:\"{}\" \
     kernel32.lib advapi32.lib ws2_32.lib userenv.lib Bcrypt.lib ntdll.lib {} \
     /SUBSYSTEM:CONSOLE /DEBUG",
                 windows_path_escape(&vcvarsall)?,
                 windows_path_escape(obj_path)?,
+                windows_path_escape(&lib_path)?,
                 windows_path_escape(Path::new(path))?,
                 libs
             );
@@ -649,6 +659,7 @@ pub fn link(
                 OsStr::new("-o"),
                 OsStr::new(path),
                 obj_path.as_os_str(),
+                lib_path.as_os_str(),
                 OsStr::new("-pthread"),
                 OsStr::new("-ldl"),
             ]);
