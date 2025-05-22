@@ -29,6 +29,8 @@ cargo run input.py --typed
 ```
 
 ## Compiler Features
+View more information about the compiler design [here](https://github.com/prabhask5/typed-python-compiler/blob/main/DESIGN.md).
+
 - Features a hand written Rust lexer and parser. The parser is a left recursive parser with a look-ahead value of 2 to distinguish between declarations and statements.
 - Supports outputting an intermediate AST representation of the code. This can be viewed directly through the CLI.
 - Type checks the AST to predict and determine expected types for complex statements and declarations. Throws non-fatal type errors stored in the AST to see type errors in the input program. This can be viewed directly through the CLI.
