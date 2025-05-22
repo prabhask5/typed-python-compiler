@@ -88,19 +88,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let program = args[0].clone();
 
     let mut opts = Options::new();
-    opts.optflag("h", "help", "Print this help menu");
     opts.optflag("a", "ast", "Print bare AST");
     opts.optflag("t", "typed", "Print typed AST");
     opts.optflag("o", "obj", "Output object file without linking");
-    opts.optflag("s", "static", "Link against library statically if possible");
-    opts.optopt(
-        "p",
-        "platform",
-        "Specify target platform",
-        "[windows|linux|macos]",
-    );
-
-    opts.optflag("", "version", "Display version");
 
     let matches = match opts.parse(&args[1..]) {
         Ok(m) => m,
@@ -110,16 +100,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             return Err(ArgumentError.into());
         }
     };
-
-    if matches.opt_present("h") {
-        print_usage(&program, opts);
-        return Ok(());
-    }
-
-    if matches.opt_present("version") {
-        println!("{} {}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
-        return Ok(());
-    }
 
     let input = if let Some(input) = matches.free.first() {
         input
@@ -159,26 +139,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let no_link = matches.opt_present("o");
     let static_lib = matches.opt_present("s");
-    let platform = matches
-        .opt_str("platform")
-        .map(|p| match p.as_str() {
-            "windows" => Ok(Platform::Windows),
-            "linux" => Ok(Platform::Linux),
-            "macos" => Ok(Platform::Macos),
-            _ => {
-                eprintln!("Unknown platform `{}`", p);
-                Err(ArgumentError)
-            }
-        })
-        .transpose()?
-        .unwrap_or(PLATFORM);
-
-    if platform != PLATFORM && !no_link {
-        eprintln!("Cross-platform linking is unsupported. Please use --obj option.");
-        return Err(ArgumentError.into());
-    }
-
-    codegen::codegen(input, ast, output, no_link, static_lib, platform)?;
+    codegen::codegen(input, ast, output, no_link, static_lib, PLATFORM)?;
 
     Ok(())
 }
