@@ -480,7 +480,7 @@ impl DebugWriter for Codeview {
             func_id.write_str(&chunk.name);
             let func_id_id = self.write_leaf(LeafType::FuncId, func_id);
 
-            let proc_id_type = if chunk.name == BUILTIN_TYPEPY_MAIN {
+            let proc_id_type = if chunk.name == BUILTIN_CHOCOPY_MAIN {
                 RecordType::GProc32Id
             } else {
                 RecordType::LProc32Id

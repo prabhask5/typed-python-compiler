@@ -1,11 +1,11 @@
 [workspace]
 
 members = [
-    "typepy",
-    "typepy-stdlib",
+    "chocopy",
+    "chocopy-stdlib",
 ]
 
 default-members = [
-    "typepy",
-    "typepy-stdlib",
+    "chocopy",
+    "chocopy-stdlib",
 ]

@@ -1,6 +1,8 @@
-# TypePy Compiler
+# Typed Python Language Rust Compiler
 
-A TypePy ([ChocoPy](chocopy.org)) compiler in Rust.
+[ChocoPy](https://chocopy.org/) is a programming language designed for classroom use in undergraduate compilers courses. ChocoPy is a restricted subset of Python 3, which can easily be compiled to a target such as RISC-V. The language is fully specified using formal grammar, typing rules, and operational semantics. ChocoPy is used to teach CS 164 at UC Berkeley. ChocoPy has been designed by Rohan Padhye and Koushik Sen, with substantial contributions from Paul Hilfinger.
+
+This is a Rust variant of the ChocoPy compiler created as part of the COMPSCI 164 class project that now targets x86.
 
 ## Get Started
 

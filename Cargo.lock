@@ -39,6 +39,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
+name = "chocopy"
+version = "0.1.0"
+dependencies = [
+ "cc",
+ "enum_dispatch",
+ "getopts",
+ "gimli",
+ "md-5",
+ "object",
+ "once_cell",
+ "rand",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "chocopy-stdlib"
+version = "0.1.0"
+
+[[package]]
 name = "crc32fast"
 version = "1.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -312,26 +332,6 @@ name = "typenum"
 version = "1.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1dccffe3ce07af9386bfd29e80c0ab1a8205a2fc34e4bcd40364df902cfa8f3f"
-
-[[package]]
-name = "typepy"
-version = "0.1.0"
-dependencies = [
- "cc",
- "enum_dispatch",
- "getopts",
- "gimli",
- "md-5",
- "object",
- "once_cell",
- "rand",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "typepy-stdlib"
-version = "0.1.0"
 
 [[package]]
 name = "unicode-ident"

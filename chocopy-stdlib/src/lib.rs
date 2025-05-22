@@ -55,7 +55,7 @@ pub(crate) unsafe fn calculate_size<F: FnOnce() -> u64>(
     }
 }
 
-/// Allocates a new TypePy object and tracks it for garbage collection.
+/// Allocates a new ChocoPy object and tracks it for garbage collection.
 /// Triggers GC if allocation exceeds current threshold.
 ///
 /// # Safety
@@ -135,7 +135,7 @@ pub unsafe extern "C" fn len(pointer: *mut Object) -> i32 {
     }
 }
 
-/// Prints a TypePy object to standard output.
+/// Prints a ChocoPy object to standard output.
 /// Supports int, bool, and str types.
 ///
 /// # Safety
@@ -258,17 +258,17 @@ pub extern "C" fn none_op() -> ! {
 #[cfg(not(test))]
 pub mod crt0_glue {
     unsafe extern "C" {
-        #[link_name = "$typepy_main"]
-        fn typepy_main();
+        #[link_name = "$chocopy_main"]
+        fn chocopy_main();
     }
 
-    /// Entry point that invokes the compiled TypePy program.
+    /// Entry point that invokes the compiled ChocoPy program.
     ///
     /// # Safety
-    /// - Assumes a valid `$typepy_main` symbol exists.
+    /// - Assumes a valid `$chocopy_main` symbol exists.
     #[unsafe(export_name = "main")]
     pub unsafe extern "C" fn entry_point() -> i32 {
-        unsafe { typepy_main(); }
+        unsafe { chocopy_main(); }
         0
     }
 }

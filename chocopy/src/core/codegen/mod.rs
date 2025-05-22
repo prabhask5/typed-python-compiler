@@ -36,7 +36,7 @@ const BUILTIN_PRINT: &str = "$print";
 const BUILTIN_INIT: &str = "$init";
 
 // Program entry point symbol
-const BUILTIN_TYPEPY_MAIN: &str = "$typepy_main";
+const BUILTIN_CHOCOPY_MAIN: &str = "$chocopy_main";
 
 // Special data section symbols
 const GLOBAL_SECTION: &str = "$global";
@@ -216,7 +216,7 @@ impl ClassDebug {
     }
 }
 
-// The generated TypePy program, without linking to other libraries
+// The generated ChocoPy program, without linking to other libraries
 struct CodeSet {
     chunks: Vec<Chunk>,
     global_size: u64,             // Section size reserved for all global variables
@@ -449,7 +449,7 @@ pub fn gen_object(
         }
 
         // Only the entry point is exposed in linkage scope for linking with external entry point
-        let scope = if chunk.name == BUILTIN_TYPEPY_MAIN {
+        let scope = if chunk.name == BUILTIN_CHOCOPY_MAIN {
             SymbolScope::Linkage
         } else {
             SymbolScope::Compilation
@@ -591,8 +591,8 @@ pub fn link(
 ) -> std::result::Result<(), Box<dyn std::error::Error>> {
     // Find the standard library
     let lib_file = match platform {
-        Platform::Windows => "typepy_stdlib.lib",
-        Platform::Linux | Platform::Macos => "libtypepy_stdlib.a",
+        Platform::Windows => "chocopy_stdlib.lib",
+        Platform::Linux | Platform::Macos => "libchocopy_stdlib.a",
     };
 
     let mut lib_path = std::env::current_exe()?;
@@ -642,7 +642,7 @@ pub fn link(
             );
 
             let mut bat_path = std::env::temp_dir();
-            let bat_name = format!("typepy-{}.bat", rand::random::<u32>());
+            let bat_name = format!("chocopy-{}.bat", rand::random::<u32>());
             bat_path.push(bat_name);
 
             std::fs::write(&bat_path, batch_content)?;
@@ -701,7 +701,7 @@ pub fn codegen(
         obj_path.to_owned()
     } else {
         let mut obj_path = std::env::temp_dir();
-        let obj_name = format!("typepy-{}.o", rand::random::<u32>());
+        let obj_name = format!("chocopy-{}.o", rand::random::<u32>());
         obj_path.push(obj_name);
         obj_path
     };

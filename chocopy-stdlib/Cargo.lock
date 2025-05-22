@@ -3,5 +3,5 @@
 version = 4
 
 [[package]]
-name = "typepy-stdlib"
+name = "chocopy-stdlib"
 version = "0.1.0"

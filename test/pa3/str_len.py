@@ -1,1 +1,1 @@
-print(len("TypePy"))
+print(len("ChocoPy"))
